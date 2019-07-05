@@ -15,13 +15,17 @@ public class SimpleMovingAverageCalculationAlg implements MovingAverageCalculati
         Assert.isTrue(data.length > (windowSize-1), "Incorrect data array size");
 
         Double[] res = new Double[data.length - windowSize + 1];
-        Arrays.fill(res, 0);
+        Arrays.fill(res, 0.0);
 
-        for (int i = res.length; i > 0; i--) {
+        int i = data.length - 1;
+        int c = 0;
+        while (i > data.length - 1 - res.length) {
             for (int j = 0; j < windowSize - 1; j++) {
-                res[i] += res[j];
+                res[c] += data[i - j];
             }
-            res[i] /= windowSize;
+            res[c] /= windowSize;
+            i--;
+            c++;
         }
 
         return res;

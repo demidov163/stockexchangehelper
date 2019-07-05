@@ -1,6 +1,7 @@
 package com.demidov.projects.stockexhangehelper.service.impl;
 
 import com.demidov.projects.stockexhangehelper.data.StockShareParameters;
+import com.demidov.projects.stockexhangehelper.data.statistic.StatisticData;
 import com.demidov.projects.stockexhangehelper.service.StockExchangeRequestService;
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
@@ -20,8 +21,9 @@ public class StockExchangeRequestServiceImpl implements StockExchangeRequestServ
     private String host;
 
 
+    // <row id="129" board_group_id="57" boardid="TQBR" title="Т+: Акции и ДР - безадрес." is_traded="1" />
     @Override
-    public List<String> getStockShareHistoryInfo(StockShareParameters parameters) {
+    public List<StatisticData> getStockShareHistoryInfo(StockShareParameters parameters) {
         RestTemplate restTemplate = new RestTemplate();
 
         StringBuilder url = new StringBuilder().append(host)
@@ -38,7 +40,7 @@ public class StockExchangeRequestServiceImpl implements StockExchangeRequestServ
         List<XML> nodes = xmlDocument.nodes(xPathToRows);
 
         return nodes.stream()
-                .flatMap(node -> node.xpath("@" + parameters.getAttributeIndex()).stream())
+                .map(node -> mapStatisticDate(node, parameters.getAttributeIndex()))
                 .collect(Collectors.toList());
     }
 
@@ -57,5 +59,14 @@ public class StockExchangeRequestServiceImpl implements StockExchangeRequestServ
                 url.append(param.getKey()).append("=").append(param.getValue()).append("&");
             }
         }
+    }
+
+    private StatisticData mapStatisticDate(XML node, String attributePriceName) {
+        final List<String> xpathDate = node.xpath("@TRADEDATE");
+        final List<String> xpathPrice = node.xpath("@" + attributePriceName);
+        String price = xpathPrice.iterator().next();
+        return StatisticData.builder()
+                .date(xpathDate.isEmpty() ? "" : xpathDate.iterator().next())
+                .price(StringUtils.isNotEmpty(price) ? Double.parseDouble(price) :  0).build();
     }
 }

@@ -2,6 +2,7 @@ package com.demidov.projects.stockexhangehelper;
 
 import com.demidov.projects.stockexhangehelper.config.StockExchangeAppConfig;
 import com.demidov.projects.stockexhangehelper.data.StockShareParameters;
+import com.demidov.projects.stockexhangehelper.data.statistic.StatisticData;
 import com.demidov.projects.stockexhangehelper.service.StockExchangeRequestService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class StockExchangeRequestTest {
                 .build();
 
 
-        List<String> stockShareInfo = stockExchangeRequestService.getStockShareHistoryInfo(parameters);
+        List<StatisticData> stockShareInfo = stockExchangeRequestService.getStockShareHistoryInfo(parameters);
         log.debug("stockShareInfo {}", stockShareInfo);
     }
 }

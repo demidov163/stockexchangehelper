@@ -3,6 +3,7 @@ package com.demidov.projects.stockexhangehelper.executors.impl;
 import com.demidov.projects.stockexhangehelper.data.StockStatisticParameters;
 import com.demidov.projects.stockexhangehelper.data.StockShareParameters;
 import com.demidov.projects.stockexhangehelper.data.StockStatisticResult;
+import com.demidov.projects.stockexhangehelper.data.statistic.StatisticData;
 import com.demidov.projects.stockexhangehelper.service.StockExchangeRequestService;
 import com.demidov.projects.stockexhangehelper.service.alg.MovingAverageCalculationAlg;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +32,16 @@ public class StockStatisticExecutor {
                 .tillDate(LocalDate.now().format(dateFormat))
                 .fromDate(LocalDate.now().minusDays(stockParameters.getWindowSize() * 2).format(dateFormat))
                 .build();
-        List<String> stockShareHistoryInfo = stockExchangeRequestService.getStockShareHistoryInfo(stockShareParameters);
+        List<StatisticData> stockShareHistoryInfo = stockExchangeRequestService.getStockShareHistoryInfo(stockShareParameters);
 
         Assert.isTrue(!CollectionUtils.isEmpty(stockShareHistoryInfo), "No history info for " + stockParameters.getShareName());
 
-        Double[] data = stockShareHistoryInfo.stream().map(Double::parseDouble).toArray(Double[]::new);
+        Double[] data = stockShareHistoryInfo.stream().map(StatisticData::getPrice).toArray(Double[]::new);
 
         Double[] movingAverage = movingAverageCalculationAlg.calculateMovingAverage(data, stockParameters.getWindowSize());
 
         return StockStatisticResult.builder().prices(data)
-                .prices(movingAverage)
+                .maPrices(movingAverage)
                 .windowSize(stockParameters.getWindowSize()).build();
     }
 }
