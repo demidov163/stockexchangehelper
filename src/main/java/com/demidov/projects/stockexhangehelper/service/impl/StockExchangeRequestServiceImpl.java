@@ -20,6 +20,8 @@ public class StockExchangeRequestServiceImpl implements StockExchangeRequestServ
     @Value(value = "${stockexhange.host}")
     private String host;
 
+    private static final String BOARD_ID_TQBR = "TQBR";
+
 
     // <row id="129" board_group_id="57" boardid="TQBR" title="Т+: Акции и ДР - безадрес." is_traded="1" />
     @Override
@@ -34,7 +36,7 @@ public class StockExchangeRequestServiceImpl implements StockExchangeRequestServ
 
         String shareInfoResponse = restTemplate.getForObject(url.toString(), String.class);
 
-        String xPathToRows = "/document/data[@id='history']/rows/row";
+        String xPathToRows = "/document/data[@id='history']/rows/row[@BOARDID='TQBR']";
 
         XMLDocument xmlDocument = new XMLDocument(shareInfoResponse);
         List<XML> nodes = xmlDocument.nodes(xPathToRows);
