@@ -6,7 +6,6 @@ import com.demidov.projects.stockexhangehelper.data.StockStatisticResult;
 import com.demidov.projects.stockexhangehelper.data.statistic.StatisticData;
 import com.demidov.projects.stockexhangehelper.service.StockExchangeRequestService;
 import com.demidov.projects.stockexhangehelper.service.alg.MovingAverageCalculationAlg;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -14,13 +13,13 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 
 public class StockStatisticExecutor {
 
-    private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final int DAYS_TO_SUBTRACT = 10;
+    private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Autowired
     private StockExchangeRequestService stockExchangeRequestService;
@@ -29,10 +28,11 @@ public class StockStatisticExecutor {
     private MovingAverageCalculationAlg movingAverageCalculationAlg;
 
     public StockStatisticResult executeStockStatistic(StockStatisticParameters stockParameters) {
+
         int wDaysLeast = stockParameters.getWindowSize() * 2;
         List<StatisticData> stockShareHistoryInfo = new ArrayList<>();
+        LocalDate fromDate = LocalDate.now().minusDays(DAYS_TO_SUBTRACT);
         LocalDate tillDate = LocalDate.now();
-        LocalDate fromDate = LocalDate.now().minusDays(10);
 
         while (wDaysLeast > 0) {
             StockShareParameters stockShareParameters = StockShareParameters.builder()
@@ -50,7 +50,7 @@ public class StockStatisticExecutor {
             stockShareHistoryInfo.addAll(0, statisticDataTmp);
             wDaysLeast -= statisticDataTmp.size();
             tillDate = fromDate.minusDays(1);
-            fromDate = tillDate.minusDays(10);
+            fromDate = tillDate.minusDays(DAYS_TO_SUBTRACT);
         }
 
         Assert.isTrue(!CollectionUtils.isEmpty(stockShareHistoryInfo), "No history info for " + stockParameters.getShareName());
