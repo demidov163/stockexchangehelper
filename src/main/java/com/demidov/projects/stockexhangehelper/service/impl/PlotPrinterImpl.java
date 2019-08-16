@@ -15,8 +15,10 @@ public class PlotPrinterImpl {
         chart.setTitle("Sample Chart");
         chart.setXAxisTitle("X");
         chart.setXAxisTitle("Y");
+
         data.forEach(d -> {
-            XYSeries series = chart.addSeries(d.getName(), null, d.getData());
+            //todo fix xData
+            XYSeries series = chart.addSeries(d.getName(), null, d.getDataY());
             series.setMarker(SeriesMarkers.CIRCLE);
         });
 

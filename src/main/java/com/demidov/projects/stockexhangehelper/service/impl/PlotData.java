@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class PlotData {
-    private double[] data;
+    private double[] dataX;
+    private double[] dataY;
     private String name;
 }

@@ -15,8 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Controller
@@ -34,33 +34,43 @@ public class StockStatisticController {
 
     @RequestMapping(value = "/statistic", method = RequestMethod.POST)
     @ResponseBody
-    public StockStatisticResult getStockStatisticResult(@RequestBody StockStatisticRequest params) {
-        StockStatisticParameters parameters = StockStatisticParameters.builder()
-                .priceAttributeName("CLOSE")
-                .shareName(params.getShareName())
-                .windowSize(params.getWindowSize()).build();
-        StockStatisticResult stockStatisticResult = stockStatisticExecutor.executeStockStatistic(parameters);
+    public List<StockStatisticResult> getStockStatisticResult(@RequestBody StockStatisticRequest params) {
+        final List<Integer> windowSizes = params.getWindowSize();
+        if (windowSizes.isEmpty()) {
+            return null;
+        }
+        List<StockStatisticResult> stockStatisticResults = new ArrayList<>();
+        for (Integer windowSize : windowSizes) {
+            StockStatisticParameters parameters = StockStatisticParameters.builder()
+                    .priceAttributeName("CLOSE")
+                    .shareName(params.getShareName())
+                    .windowSize(windowSize).build();
+            stockStatisticResults.add(stockStatisticExecutor.executeStockStatistic(parameters));
+        }
+
         try {
-            plotPrinter.plotPrint(preparePlotDataList(stockStatisticResult));
+            plotPrinter.plotPrint(preparePlotDataList(stockStatisticResults));
         } catch (IOException e) {
            log.error("Error in plot print", e);
         }
-        return stockStatisticResult;
+        return stockStatisticResults;
 
     }
 
     //reduce price array to moving average array size
-    private List<PlotData> preparePlotDataList(StockStatisticResult stockStatisticResult) {
-        return Arrays.asList(getPlotData(stockStatisticResult.getMaPrices(), "MovAvg"),
-         getPlotData(Arrays.copyOfRange(stockStatisticResult.getPrices(),
-                 stockStatisticResult.getPrices().length - stockStatisticResult.getMaPrices().length,
-                 stockStatisticResult.getPrices().length), "Prices")
-         );
+    private List<PlotData> preparePlotDataList(List<StockStatisticResult> stockStatisticResults) {
+        List<PlotData> res = new ArrayList<>();
+        res.add(getPlotData(stockStatisticResults.get(0).getMaPrices(), "Prices"));
+        res.addAll(stockStatisticResults.stream()
+                .map(ssr -> getPlotData(Arrays.copyOfRange(ssr.getPrices(),
+                        ssr.getPrices().length - ssr.getMaPrices().length,
+                        ssr.getPrices().length), "Prices " + ssr.getWindowSize())).collect(Collectors.toList()));
+        return res;
     }
 
     private PlotData getPlotData(Double[] data, String name) {
         return PlotData.builder()
-                .data(Stream.of(data).mapToDouble(Double::doubleValue).toArray())
+                .dataY(Stream.of(data).mapToDouble(Double::doubleValue).toArray())
                 .name(name).build();
     }
 
@@ -81,3 +91,4 @@ public class StockStatisticController {
         return "0";
     }
 }
+//
