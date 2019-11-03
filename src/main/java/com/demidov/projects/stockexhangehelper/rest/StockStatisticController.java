@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Controller
 @RequestMapping(value = "/stockexhange")
@@ -32,7 +30,7 @@ public class StockStatisticController {
         this.plotPrinter = plotPrinter;
     }
 
-    @RequestMapping(value = "/statistic", method = RequestMethod.POST)
+    @RequestMapping(value = "/movingaverage", method = RequestMethod.POST)
     @ResponseBody
     public List<StockStatisticResult> getStockStatisticResult(@RequestBody StockStatisticRequest params) {
         final List<Integer> windowSizes = params.getWindowSize();
@@ -60,17 +58,36 @@ public class StockStatisticController {
     //reduce price array to moving average array size
     private List<PlotData> preparePlotDataList(List<StockStatisticResult> stockStatisticResults) {
         List<PlotData> res = new ArrayList<>();
-        res.add(getPlotData(stockStatisticResults.get(0).getMaPrices(), "Prices"));
+        //1 find biggest price array
+        StockStatisticResult maxResult = stockStatisticResults.get(0);
+        for (int i = 1; i < stockStatisticResults.size(); i++) {
+            if (stockStatisticResults.get(i).getPrices().length > maxResult.getPrices().length) {
+                maxResult = stockStatisticResults.get(i);
+            }
+        }
+
+        res.add(getPlotData(maxResult.getPrices(), "Prices"));
+        //2 add MA arrays
+        for (StockStatisticResult ssr : stockStatisticResults) {
+            double[] tmp = new double[maxResult.getMaPrices().length];
+            Arrays.fill(tmp, 0.0);
+            int i = tmp.length - 1;
+            double[] maPrices = ssr.getMaPrices();
+            for (int j = maPrices.length - 1; j >= 0; j--) {
+                tmp[i--] = maPrices[j];
+            }
+            res.add(getPlotData(tmp, "Prices " + ssr.getWindowSize()));
+        }/*
         res.addAll(stockStatisticResults.stream()
                 .map(ssr -> getPlotData(Arrays.copyOfRange(ssr.getPrices(),
                         ssr.getPrices().length - ssr.getMaPrices().length,
-                        ssr.getPrices().length), "Prices " + ssr.getWindowSize())).collect(Collectors.toList()));
+                        ssr.getPrices().length), "Prices " + ssr.getWindowSize())).collect(Collectors.toList()));*/
         return res;
     }
 
-    private PlotData getPlotData(Double[] data, String name) {
+    private PlotData getPlotData(double[] data, String name) {
         return PlotData.builder()
-                .dataY(Stream.of(data).mapToDouble(Double::doubleValue).toArray())
+                .dataY(data)
                 .name(name).build();
     }
 
@@ -82,7 +99,7 @@ public class StockStatisticController {
         XYChart chart = new XYChart(500, 400);
         chart.setTitle("Sample Chart");
         chart.setXAxisTitle("X");
-        chart.setXAxisTitle("Y");
+        chart.setYAxisTitle("Y");
         XYSeries series = chart.addSeries("y(x)", null, yData);
         series.setMarker(SeriesMarkers.CIRCLE);
 

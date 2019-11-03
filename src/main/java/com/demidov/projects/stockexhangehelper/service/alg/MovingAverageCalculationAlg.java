@@ -1,5 +1,5 @@
 package com.demidov.projects.stockexhangehelper.service.alg;
 
 public interface MovingAverageCalculationAlg {
-    Double[] calculateMovingAverage(Double[] data, int windowSize);
+    double[] calculateMovingAverage(double[] data, int windowSize);
 }

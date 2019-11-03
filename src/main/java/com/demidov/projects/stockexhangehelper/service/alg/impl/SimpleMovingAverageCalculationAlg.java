@@ -9,12 +9,12 @@ import java.util.Arrays;
 public class SimpleMovingAverageCalculationAlg implements MovingAverageCalculationAlg {
 
     @Override
-    public Double[] calculateMovingAverage(Double[] data, int windowSize) {
+    public double[] calculateMovingAverage(double[] data, int windowSize) {
         Assert.isTrue(windowSize > 1, "Window size should be more 1");
         Assert.isTrue(data != null, "Data array should be not null");
         Assert.isTrue(data.length > (windowSize-1), "Incorrect data array size");
 
-        Double[] res = new Double[data.length - windowSize + 1];
+        double[] res = new double[data.length - windowSize + 1];
         Arrays.fill(res, 0.0);
 
         int i = data.length - 1;

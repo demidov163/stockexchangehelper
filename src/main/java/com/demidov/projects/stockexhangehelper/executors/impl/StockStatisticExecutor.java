@@ -55,9 +55,9 @@ public class StockStatisticExecutor {
 
         Assert.isTrue(!CollectionUtils.isEmpty(stockShareHistoryInfo), "No history info for " + stockParameters.getShareName());
 
-        Double[] data = stockShareHistoryInfo.stream().map(StatisticData::getPrice).toArray(Double[]::new);
+        double[] data = stockShareHistoryInfo.stream().mapToDouble(StatisticData::getPrice).toArray();
 
-        Double[] movingAverage = movingAverageCalculationAlg.calculateMovingAverage(data, stockParameters.getWindowSize());
+        double[] movingAverage = movingAverageCalculationAlg.calculateMovingAverage(data, stockParameters.getWindowSize());
 
         return StockStatisticResult.builder().prices(data)
             .maPrices(movingAverage)

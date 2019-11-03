@@ -10,8 +10,8 @@ import lombok.ToString;
 @Builder
 @ToString
 public class StockStatisticResult {
-    private Double[] prices;
-    private Double[] maPrices;
+    private double[] prices;
+    private double[] maPrices;
     private int windowSize;
     private String legend;
 
