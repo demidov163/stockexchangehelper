@@ -33,17 +33,18 @@ public class StockStatisticController {
     @RequestMapping(value = "/movingaverage", method = RequestMethod.POST)
     @ResponseBody
     public List<StockStatisticResult> getStockStatisticResult(@RequestBody StockStatisticRequest params) {
-        final List<Integer> windowSizes = params.getWindowSize();
+        final List<Integer> windowSizes = params.getWindowSizes();
         if (windowSizes.isEmpty()) {
             return null;
         }
         List<StockStatisticResult> stockStatisticResults = new ArrayList<>();
-        for (Integer windowSize : windowSizes) {
+        for (String shareName : params.getShareNames()) {
             StockStatisticParameters parameters = StockStatisticParameters.builder()
                     .priceAttributeName("CLOSE")
-                    .shareName(params.getShareName())
-                    .windowSize(windowSize).build();
-            stockStatisticResults.add(stockStatisticExecutor.executeStockStatistic(parameters));
+                    .shareName(shareName)
+                    .viewSize(params.getViewSize())
+                    .windowSizes(params.getWindowSizes()).build();
+            stockStatisticResults.addAll(stockStatisticExecutor.executeStockStatistic(parameters));
         }
 
         try {
@@ -69,19 +70,14 @@ public class StockStatisticController {
         res.add(getPlotData(maxResult.getPrices(), "Prices"));
         //2 add MA arrays
         for (StockStatisticResult ssr : stockStatisticResults) {
-            double[] tmp = new double[maxResult.getMaPrices().length];
+            double[] tmp = new double[maxResult.getPrices().length];
             Arrays.fill(tmp, 0.0);
             int i = tmp.length - 1;
-            double[] maPrices = ssr.getMaPrices();
-            for (int j = maPrices.length - 1; j >= 0; j--) {
-                tmp[i--] = maPrices[j];
+            for (int j = ssr.getMaPrices().length - 1; j >= 0; j--) {
+                tmp[i--] = ssr.getMaPrices()[j];
             }
             res.add(getPlotData(tmp, "Prices " + ssr.getWindowSize()));
-        }/*
-        res.addAll(stockStatisticResults.stream()
-                .map(ssr -> getPlotData(Arrays.copyOfRange(ssr.getPrices(),
-                        ssr.getPrices().length - ssr.getMaPrices().length,
-                        ssr.getPrices().length), "Prices " + ssr.getWindowSize())).collect(Collectors.toList()));*/
+        }
         return res;
     }
 

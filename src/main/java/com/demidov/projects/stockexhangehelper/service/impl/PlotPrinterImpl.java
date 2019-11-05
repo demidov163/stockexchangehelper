@@ -18,7 +18,7 @@ public class PlotPrinterImpl {
 
         data.forEach(d -> {
             //todo fix xData
-            XYSeries series = chart.addSeries(d.getName(), null, d.getDataY());
+            XYSeries series = chart.addSeries(d.getName(), d.getDataY());
             series.setMarker(SeriesMarkers.CIRCLE);
         });
 

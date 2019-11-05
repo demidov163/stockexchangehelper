@@ -8,7 +8,8 @@ import java.util.List;
 @Getter
 @Setter
 public class StockStatisticRequest {
-    private String shareName;
-    private List<Integer> windowSize;
+    private List<String> shareNames;
+    private List<Integer> windowSizes;
+    private int viewSize;
 
 }

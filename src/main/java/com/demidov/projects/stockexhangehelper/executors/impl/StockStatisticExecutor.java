@@ -13,7 +13,9 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class StockStatisticExecutor {
@@ -27,11 +29,12 @@ public class StockStatisticExecutor {
     @Autowired
     private MovingAverageCalculationAlg movingAverageCalculationAlg;
 
-    public StockStatisticResult executeStockStatistic(StockStatisticParameters stockParameters) {
+    //assumption, windowSize <= viewSize
+    public List<StockStatisticResult> executeStockStatistic(StockStatisticParameters stockParameters) {
 
-        int wDaysLeast = stockParameters.getWindowSize() * 2;
+        int wDaysLeast = stockParameters.getViewSize() * 2;
         List<StatisticData> stockShareHistoryInfo = new ArrayList<>();
-        LocalDate fromDate = LocalDate.now().minusDays(DAYS_TO_SUBTRACT);
+        LocalDate fromDate = LocalDate.now().minusDays(wDaysLeast);
         LocalDate tillDate = LocalDate.now();
 
         while (wDaysLeast > 0) {
@@ -43,8 +46,8 @@ public class StockStatisticExecutor {
                     .build();
             List<StatisticData> statisticDataTmp = stockExchangeRequestService.getStockShareHistoryInfo(stockShareParameters);
 
-            if (statisticDataTmp.size() >= stockParameters.getWindowSize() * 2) {
-                statisticDataTmp = statisticDataTmp.subList(statisticDataTmp.size() - stockParameters.getWindowSize(),
+            if (statisticDataTmp.size() >= stockParameters.getViewSize() * 2) {
+                statisticDataTmp = statisticDataTmp.subList(statisticDataTmp.size() - stockParameters.getViewSize(),
                         statisticDataTmp.size());
             }
             stockShareHistoryInfo.addAll(0, statisticDataTmp);
@@ -56,11 +59,10 @@ public class StockStatisticExecutor {
         Assert.isTrue(!CollectionUtils.isEmpty(stockShareHistoryInfo), "No history info for " + stockParameters.getShareName());
 
         double[] data = stockShareHistoryInfo.stream().mapToDouble(StatisticData::getPrice).toArray();
-
-        double[] movingAverage = movingAverageCalculationAlg.calculateMovingAverage(data, stockParameters.getWindowSize());
-
-        return StockStatisticResult.builder().prices(data)
-            .maPrices(movingAverage)
-            .windowSize(stockParameters.getWindowSize()).build();
+        return stockParameters.getWindowSizes().stream()
+                .map(ws -> StockStatisticResult.builder().prices(data)
+                           .maPrices(movingAverageCalculationAlg.calculateMovingAverage(data, ws))
+                           .windowSize(ws).build())
+                .collect(Collectors.toList());
     }
 }
