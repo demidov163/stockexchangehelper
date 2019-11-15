@@ -4,6 +4,7 @@ import com.demidov.projects.stockexhangehelper.executors.impl.StockStatisticExec
 import com.demidov.projects.stockexhangehelper.service.StockExchangeRequestService;
 import com.demidov.projects.stockexhangehelper.service.alg.MovingAverageCalculationAlg;
 import com.demidov.projects.stockexhangehelper.service.alg.impl.SimpleMovingAverageCalculationAlg;
+import com.demidov.projects.stockexhangehelper.service.impl.FutureStockPriceCalculationServiceImpl;
 import com.demidov.projects.stockexhangehelper.service.impl.PlotPrinterImpl;
 import com.demidov.projects.stockexhangehelper.service.impl.StockExchangeRequestServiceImpl;
 import org.springframework.context.annotation.Bean;
@@ -30,5 +31,10 @@ public class StockExchangeAppConfig {
     @Bean
     public PlotPrinterImpl getPlotPrinter() {
         return new PlotPrinterImpl();
+    }
+
+    @Bean
+    public FutureStockPriceCalculationServiceImpl futureStockPriceCalculationService() {
+        return new FutureStockPriceCalculationServiceImpl();
     }
 }

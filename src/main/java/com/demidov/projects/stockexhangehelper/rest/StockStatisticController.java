@@ -1,9 +1,12 @@
 package com.demidov.projects.stockexhangehelper.rest;
 
+import com.demidov.projects.stockexhangehelper.data.DesireStockPriceRequest;
+import com.demidov.projects.stockexhangehelper.data.DesireStockPriceResponse;
 import com.demidov.projects.stockexhangehelper.data.StockStatisticParameters;
 import com.demidov.projects.stockexhangehelper.data.StockStatisticResult;
 import com.demidov.projects.stockexhangehelper.executors.impl.StockStatisticExecutor;
 import com.demidov.projects.stockexhangehelper.rest.data.StockStatisticRequest;
+import com.demidov.projects.stockexhangehelper.service.impl.FutureStockPriceCalculationServiceImpl;
 import com.demidov.projects.stockexhangehelper.service.impl.PlotData;
 import com.demidov.projects.stockexhangehelper.service.impl.PlotPrinterImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +27,12 @@ public class StockStatisticController {
 
     private final StockStatisticExecutor stockStatisticExecutor;
     private final PlotPrinterImpl plotPrinter;
+    private final FutureStockPriceCalculationServiceImpl stockPriceCalculationService;
 
-    public StockStatisticController(StockStatisticExecutor stockStatisticExecutor, PlotPrinterImpl plotPrinter) {
+    public StockStatisticController(StockStatisticExecutor stockStatisticExecutor, PlotPrinterImpl plotPrinter, FutureStockPriceCalculationServiceImpl stockPriceCalculationService) {
         this.stockStatisticExecutor = stockStatisticExecutor;
         this.plotPrinter = plotPrinter;
+        this.stockPriceCalculationService = stockPriceCalculationService;
     }
 
     @RequestMapping(value = "/movingaverage", method = RequestMethod.POST)
@@ -102,6 +107,11 @@ public class StockStatisticController {
         BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
 
         return "0";
+    }
+
+    @RequestMapping(value = "/futureprice", method = RequestMethod.POST)
+    public DesireStockPriceResponse calculatePrice(DesireStockPriceRequest desireStockPrice) {
+         return stockPriceCalculationService.calcDesirePrice(desireStockPrice);
     }
 }
 //
