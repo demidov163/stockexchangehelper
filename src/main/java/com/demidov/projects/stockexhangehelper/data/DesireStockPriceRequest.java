@@ -6,10 +6,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DesireStockPriceRequest {
-    private double boughtPrice;
-    private int numBoughtItems;
+    private Double boughtPrice;
+    private Integer numBoughtItems;
     private String name;
-    private double brokerPercent;
+    private Double brokerPercent;
+    private Double additionalCharge;
 
-    private double desireProfitPrice;
+    private Double desireProfitPrice;
 }

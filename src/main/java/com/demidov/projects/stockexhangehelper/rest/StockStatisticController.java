@@ -110,7 +110,8 @@ public class StockStatisticController {
     }
 
     @RequestMapping(value = "/futureprice", method = RequestMethod.POST)
-    public DesireStockPriceResponse calculatePrice(DesireStockPriceRequest desireStockPrice) {
+    @ResponseBody
+    public DesireStockPriceResponse calculatePrice(@RequestBody DesireStockPriceRequest desireStockPrice) {
          return stockPriceCalculationService.calcDesirePrice(desireStockPrice);
     }
 }
